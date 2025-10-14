@@ -4,6 +4,7 @@ namespace App\Services;
 
 use Kreait\Firebase\Factory;
 use Google\Cloud\Firestore\FirestoreClient;
+use Google\Cloud\Firestore\FieldPath;
 
 class FirestorePeople
 {
@@ -13,20 +14,11 @@ class FirestorePeople
 
     public function __construct()
     {
-        // Lee primero del config nuevo; si no, cae al .env
         $cred = config('firebase.projects.app.credentials')
             ?? env('FIREBASE_CREDENTIALS')
             ?? env('GOOGLE_APPLICATION_CREDENTIALS');
 
-        if (!$cred || !is_string($cred)) {
-            throw new \RuntimeException(
-                'No se encontró la ruta del JSON de credenciales. ' .
-                'Configura firebase.projects.app.credentials en config/firebase.php ' .
-                'o la variable FIREBASE_CREDENTIALS/GOOGLE_APPLICATION_CREDENTIALS en .env.'
-            );
-        }
-
-        if (!file_exists($cred)) {
+        if (!$cred || !file_exists($cred)) {
             throw new \RuntimeException("El archivo de credenciales no existe: {$cred}");
         }
 
@@ -41,10 +33,40 @@ class FirestorePeople
         return $this->db->collection(self::COLLECTION);
     }
 
+    /** Lista “a pelo” (sin paginación) */
     public function list(int $limit = 50)
     {
         return $this->col()->limit($limit)->documents();
     }
+
+    /**
+     * Página con cursor (orden por ID de documento).
+     * @return array{docs:\Google\Cloud\Firestore\DocumentSnapshot[], nextCursor:?string}
+     */
+    public function listPage(int $limit = 10, ?string $afterId = null): array
+    {
+        // Ordenamos por ID de documento (seguro aunque falten campos)
+        $query = $this->col()->orderBy(FieldPath::documentId())->limit($limit);
+
+        if ($afterId) {
+            // Obtenemos el snapshot del cursor y arrancamos después
+            $snap = $this->col()->document($afterId)->snapshot();
+            if ($snap->exists()) {
+                $query = $query->startAfter($snap);
+            }
+        }
+
+        $docs = iterator_to_array($query->documents());
+        $next = null;
+
+        if (count($docs) === $limit) {
+            $last = end($docs);
+            $next = $last->id(); // usamos el último ID como cursor
+        }
+
+        return ['docs' => $docs, 'nextCursor' => $next];
+    }
+    
 
     public function get(string $id)
     {

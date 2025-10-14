@@ -1,28 +1,38 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="utf-8">
-  <title>People · Firestore</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  @vite(['resources/css/app.css','resources/js/app.js'])
-  <style>
-    body{font-family:system-ui,Segoe UI,Roboto,Helvetica,Arial,sans-serif;padding:24px}
-    nav a{margin-right:12px}
-    table{border-collapse:collapse;width:100%} th,td{border:1px solid #ddd;padding:8px} th{background:#f6f8fa}
-    input,select,button{padding:6px 8px;margin:4px 0}
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ config('app.name', 'CSV Firestore App') }}</title>
+
+    {{-- Estilos Bootstrap 5 CDN --}}
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    {{-- Iconos opcionales (Bootstrap Icons) --}}
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
 </head>
-<body>
-  <nav>
-    <a href="{{ route('people.index') }}">Listado</a>
-    <a href="{{ route('people.create') }}">Crear</a>
-    <a href="{{ route('people.import.form') }}">Importar CSV</a>
-  </nav>
 
-  @if (session('status'))
-    <div style="background:#e6ffed;border:1px solid #b7eb8f;padding:8px;margin:12px 0">{{ session('status') }}</div>
-  @endif
+<body class="bg-light">
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark mb-4">
+        <div class="container">
+            <a class="navbar-brand" href="{{ url('/') }}">CSV Firestore App</a>
 
-  @yield('content')
+            <div>
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item"><a class="nav-link" href="{{ route('people.index') }}">Listado</a></li>
+                    <li class="nav-item"><a class="nav-link" href="{{ route('people.create') }}">Crear</a></li>
+                    <li class="nav-item"><a class="nav-link" href="{{ route('people.import.form') }}">Importar CSV</a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <main class="container">
+        {{-- Contenido dinámico de cada vista --}}
+        @yield('content')
+    </main>
+
+    {{-- Scripts Bootstrap (JS + Popper) --}}
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
